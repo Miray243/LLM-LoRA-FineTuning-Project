@@ -1,0 +1,12 @@
+torch
+transformers
+peft
+bitsandbytes
+accelerate
+datasets==2.16.0
+pandas
+matplotlib
+tabulate
+func_timeout
+tensorboard
+scipy
