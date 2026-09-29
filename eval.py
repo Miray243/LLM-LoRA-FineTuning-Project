@@ -19,6 +19,12 @@ def setup_environment():
     """
     print("🔧 Setting up environment and applying patches...")
 
+    required_files = ["common/model_loader.py", "livecodebench_eval.py"]
+    missing = [path for path in required_files if not os.path.isfile(path)]
+    if missing:
+        print(f"❌ Missing CodeGen benchmark files: {', '.join(missing)}")
+        return False
+
     # 1. Patch common/model_loader.py to disable Flash Attention 2 requirement
     # This prevents errors on GPUs that don't support it or if it's not installed.
     loader_path = 'common/model_loader.py'
@@ -62,12 +68,15 @@ def setup_environment():
     else:
         print(f"❌ Error: {eval_script} not found. Please clone the CodeGen repo first.")
 
+    return True
+
 
 def run_benchmark(model_types, platform, difficulty):
     """
     Runs the benchmark for each specified model type.
     """
     print(f"\n🚀 Starting Benchmark for: {model_types}")
+    succeeded = True
 
     for model_type in model_types:
         print(f"\n========================================================")
@@ -86,8 +95,12 @@ def run_benchmark(model_types, platform, difficulty):
             subprocess.run(cmd, check=True)
         except subprocess.CalledProcessError as e:
             print(f"❌ Error evaluating {model_type}: {e}")
+            succeeded = False
         except Exception as e:
             print(f"❌ Unexpected error: {e}")
+            succeeded = False
+
+    return succeeded
 
 
 def main():
@@ -99,13 +112,16 @@ def main():
     args = parser.parse_args()
 
     # 1. Apply patches first
-    setup_environment()
+    if not setup_environment():
+        return 1
 
     # 2. Run benchmarks
-    run_benchmark(args.models, args.platform, args.difficulty)
+    if not run_benchmark(args.models, args.platform, args.difficulty):
+        return 1
 
     print("\n✅ All benchmarks completed. Check 'results/livecodebench/summary.json' for details.")
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
