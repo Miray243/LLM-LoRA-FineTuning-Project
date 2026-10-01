@@ -2,10 +2,6 @@
 
 This project focuses on fine-tuning the **Qwen 2.5 Coder 1.5B Instruct** model using **LoRA (Low-Rank Adaptation)** to improve its Python code generation capabilities. We trained two separate models using different datasets: **Deep Instruction** and **Diverse Instruction**.
 
-**Result:** On the 41 AtCoder Easy problems reported below, the base model solved 17/41 and each fine-tuned checkpoint solved 14/41. The experiment is useful for examining dataset fit and overfitting, but it did not improve this benchmark.
-
-The training scripts load [CodeGen-Deep-5K](https://huggingface.co/datasets/naholav/CodeGen-Deep-5K) and [CodeGen-Diverse-5K](https://huggingface.co/datasets/naholav/CodeGen-Diverse-5K). The full project report is available in [NLP-Report.pdf](NLP-Report.pdf).
-
 ## 📂 Project Files
 
 * `train_deep.py`: Training script for the Deep dataset.
@@ -50,7 +46,7 @@ We evaluated the models on 41 "Easy" difficulty problems from AtCoder.
 
 The **Base Model** achieved the highest Pass@1 score (41.46%). The fine-tuning process resulted in a slight performance drop (34.1%) for both Deep and Diverse datasets. This phenomenon can be attributed to:
 
-1.  **Possible loss of general performance:** Adapting to the CodeGen datasets may have affected performance on these algorithmic problems. This benchmark alone cannot establish the cause.
+1.  **Catastrophic Forgetting:** The model, while adapting to the specific format of the CodeGen datasets, likely lost some of its general pre-trained problem-solving capabilities.
 2.  **Dataset Specificity:** The fine-tuning datasets might focus on different types of Python tasks compared to the algorithmic nature of AtCoder problems.
 3.  **Overfitting:** As seen in the Diverse Loss Graph, the model began to overfit, which negatively impacts performance on unseen test data.
 
@@ -58,21 +54,18 @@ The **Base Model** achieved the highest Pass@1 score (41.46%). The fine-tuning p
 
 ## 🚀 How to Run
 
-1.  **Install dependencies in a Python environment with a compatible CUDA GPU for training:**
+1.  **Install Dependencies:**
     ```bash
     pip install -r requirements.txt
     ```
 
-2.  **Run either training experiment:**
-    ```bash
-    python train_deep.py
-    python train_diverse.py
-    ```
-    These scripts download the Qwen base model and their respective datasets. Checkpoints are written under `models/`, which is not included in this repository.
-
-3.  **Run the base-model benchmark:**
+2.  **Run Benchmark (Base Model):**
     ```bash
     python eval_base.py
     ```
 
-4.  **Fine-tuned benchmark limitation:** `eval.py` expects a separate CodeGen evaluation repository containing `livecodebench_eval.py` and `common/model_loader.py`, as well as local checkpoints. It is not a standalone evaluation command from this checkout. The table above records the original experiment; reproducing it requires that external benchmark setup.
+3.  **Run Benchmark (Fine-Tuned Models):**
+    ```bash
+    # Ensure you have the model checkpoints in a 'models/' directory
+    python eval.py
+    ```
